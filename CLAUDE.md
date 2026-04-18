@@ -47,8 +47,10 @@
 ## 4. 入り口の分岐
 
 ユーザーの発話を受けたら、まず以下のどのスキルに乗るかを判断します。
-スキル本体は `.claude/skills/<name>/SKILL.md` にあり、
-`/sync` / `/url-ingest` の slash command からも起動できます。
+スキル本体は `.claude/skills/<name>/SKILL.md` (canonical) にあり、
+Claude Code からは `/sync` / `/url-ingest` の slash command で、
+Codex CLI からは `.agents/skills/` 経由で同じファイルを読み込んで
+`$sync` / `$url-ingest` として起動できます。
 
 - **URL を含む取り込み依頼** (「これソース化して」「取り込んで」
   「入れといて」+ URL) → [`url-ingest` スキル](.claude/skills/url-ingest/SKILL.md)。
