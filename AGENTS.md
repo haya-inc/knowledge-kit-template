@@ -1,4 +1,4 @@
-# faq-kit 運用規約
+# knowledge-kit 運用規約
 
 このディレクトリの運用規約は [CLAUDE.md](./CLAUDE.md) に定義されています。
 エージェント (Codex / Claude Code / その他) がこのファイルを読んだ場合は、

@@ -2,11 +2,11 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8">
-<title>faq-kit dashboard</title>
+<title>knowledge-kit dashboard</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <!--
-  base href は faqkit.py のレンダリング時に project root への相対パスを
-  埋め込む (例: dashboard.output=".faqkit/dashboard.html" なら "../")。
+  base href は knowledgekit.py のレンダリング時に project root への相対パスを
+  埋め込む (例: dashboard.output=".knowledgekit/dashboard.html" なら "../")。
   これによりページ内すべての相対リンク (source/*, inbox/*, .claude/*,
   CLAUDE.md など) が project root 基準で解決される。
 -->
@@ -115,7 +115,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1>faq-kit dashboard <span id="status-pill"></span></h1>
+    <h1>knowledge-kit dashboard <span id="status-pill"></span></h1>
     <div class="root" id="root-path"></div>
     <div class="updated" id="updated-at"></div>
   </header>
@@ -145,19 +145,19 @@
       <a href="CLAUDE.md">CLAUDE.md</a> を参照。
     </p>
     <pre># 差分確認 (人間向け / JSON)
-python tools/faqkit.py scan
-python tools/faqkit.py scan --json
+python tools/knowledgekit.py scan
+python tools/knowledgekit.py scan --json
 
 # 変換結果を記録 (sync hook の中で実行)
-python tools/faqkit.py record --source inbox/... --output source/... --converter "pandoc@3.1"
+python tools/knowledgekit.py record --source inbox/... --output source/... --converter "pandoc@3.1"
 
 # 孤立 MD の掃除 / 整合性検証
-python tools/faqkit.py prune
-python tools/faqkit.py verify
+python tools/knowledgekit.py prune
+python tools/knowledgekit.py verify
 
 # 索引とダッシュボードの更新
-python tools/faqkit.py update-readme
-python tools/faqkit.py dashboard --open</pre>
+python tools/knowledgekit.py update-readme
+python tools/knowledgekit.py dashboard --open</pre>
   </section>
 
   <details>
@@ -167,14 +167,14 @@ python tools/faqkit.py dashboard --open</pre>
 
   <footer>
     生成: <span id="generated-at"></span> &middot;
-    <code>faq-kit</code> v<span id="tool-version"></span>
+    <code>knowledge-kit</code> v<span id="tool-version"></span>
   </footer>
 </div>
 
-<script id="faqkit-data" type="application/json">__FAQKIT_DATA__</script>
+<script id="knowledgekit-data" type="application/json">__FAQKIT_DATA__</script>
 <script>
 (() => {
-  const raw = document.getElementById("faqkit-data").textContent;
+  const raw = document.getElementById("knowledgekit-data").textContent;
   const D = JSON.parse(raw);
 
   const $ = (id) => document.getElementById(id);

@@ -16,8 +16,8 @@ __pycache__/
 .venv/
 venv/
 
-# faq-kit 自動生成物 (状態 / ダッシュボード / ログ)
-.faqkit/state.yml
-.faqkit/dashboard.html
-.faqkit/logs/
+# knowledge-kit 自動生成物 (状態 / ダッシュボード / ログ)
+.knowledgekit/state.yml
+.knowledgekit/dashboard.html
+.knowledgekit/logs/
 .git.broken*

@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""faq-kit 状態管理ツール。
+"""knowledge-kit 状態管理ツール。
 
 このスクリプトはキットの「機械的に決定的な部分」だけを担います。
 
   - inbox/ と source/ を走査してハッシュを計算
-  - .faqkit/state.yml と突き合わせて差分を検出
+  - .knowledgekit/state.yml と突き合わせて差分を検出
   - 変換結果を state.yml に記録
   - state.yml とファイルシステムの整合性を検証
 
@@ -14,17 +14,17 @@
 
 使い方:
 
-  python tools/faqkit.py scan                 # 差分を人間向けに要約
-  python tools/faqkit.py scan --json          # 差分を機械向け JSON で出力
-  python tools/faqkit.py record \\
+  python tools/knowledgekit.py scan                 # 差分を人間向けに要約
+  python tools/knowledgekit.py scan --json          # 差分を機械向け JSON で出力
+  python tools/knowledgekit.py record \\
       --source inbox/handbook.pdf \\
       --output source/handbook.md \\
       --converter pandoc@3.1 \\
       [--status ok|failed] [--notes "..."]
-  python tools/faqkit.py prune                # 孤立 MD を自動削除し state を整える
-  python tools/faqkit.py verify               # state と filesystem の整合性確認
-  python tools/faqkit.py reindex              # state を壊したときの復旧下書き
-  python tools/faqkit.py config               # 実効設定 (defaults + config.yml) を出力
+  python tools/knowledgekit.py prune                # 孤立 MD を自動削除し state を整える
+  python tools/knowledgekit.py verify               # state と filesystem の整合性確認
+  python tools/knowledgekit.py reindex              # state を壊したときの復旧下書き
+  python tools/knowledgekit.py config               # 実効設定 (defaults + config.yml) を出力
 
 依存: PyYAML。Python 3.10+。
 """
@@ -54,8 +54,8 @@ except ImportError:  # pragma: no cover
 # ---------------------------------------------------------------------------
 
 STATE_VERSION = 1
-STATE_RELATIVE = Path(".faqkit") / "state.yml"
-CONFIG_RELATIVE = Path(".faqkit") / "config.yml"
+STATE_RELATIVE = Path(".knowledgekit") / "state.yml"
+CONFIG_RELATIVE = Path(".knowledgekit") / "config.yml"
 INBOX_DIRNAME = "inbox"
 SOURCE_DIRNAME = "source"
 
@@ -87,7 +87,7 @@ DEFAULT_CONFIG: dict = {
         "method_order": ["fetch", "browser_mcp"],
         "fetch": {
             "timeout_seconds": 30,
-            "user_agent": "faq-kit/0.1",
+            "user_agent": "knowledge-kit/0.1",
             "follow_redirects": True,
         },
         "browser_mcp": {
@@ -107,7 +107,7 @@ DEFAULT_CONFIG: dict = {
         "translate": False,
     },
     "logs": {
-        "dir": ".faqkit/logs",
+        "dir": ".knowledgekit/logs",
         "retention_days": 30,
     },
     "readme": {
@@ -117,7 +117,7 @@ DEFAULT_CONFIG: dict = {
     "dashboard": {
         "auto_generate": True,
         "auto_open": False,
-        "output": ".faqkit/dashboard.html",
+        "output": ".knowledgekit/dashboard.html",
     },
 }
 
@@ -134,13 +134,13 @@ def utc_now() -> str:
 # ---------------------------------------------------------------------------
 
 def find_root(start: Path) -> Path:
-    """`.faqkit/` を持つ最寄りの祖先を返す。"""
+    """`.knowledgekit/` を持つ最寄りの祖先を返す。"""
     current = start.resolve()
     for candidate in [current, *current.parents]:
-        if (candidate / ".faqkit").is_dir():
+        if (candidate / ".knowledgekit").is_dir():
             return candidate
     sys.stderr.write(
-        f"エラー: {start} から `.faqkit/` を持つディレクトリが見つかりません。\n"
+        f"エラー: {start} から `.knowledgekit/` を持つディレクトリが見つかりません。\n"
         f"kit のルートで実行するか、--root オプションを指定してください。\n"
     )
     sys.exit(2)
@@ -264,8 +264,8 @@ def save_state(root: Path, state: State) -> None:
     }
     tmp = path.with_suffix(".yml.tmp")
     header = (
-        "# faq-kit state file (managed by tools/faqkit.py)\n"
-        "# 手動編集は原則しないでください。壊れた場合は `python tools/faqkit.py reindex` で復旧。\n"
+        "# knowledge-kit state file (managed by tools/knowledgekit.py)\n"
+        "# 手動編集は原則しないでください。壊れた場合は `python tools/knowledgekit.py reindex` で復旧。\n"
     )
     with tmp.open("w", encoding="utf-8") as f:
         f.write(header)
@@ -511,7 +511,7 @@ def scan(root: Path) -> dict:
 
 def print_scan_human(report: dict) -> None:
     s = report["summary"]
-    print(f"faq-kit scan ({report['root']})")
+    print(f"knowledge-kit scan ({report['root']})")
     print(f"  新規            : {s['new']}")
     print(f"  更新             : {s['modified']}")
     print(f"  スキップ        : {s['unchanged']}")
@@ -989,7 +989,7 @@ def _base_href_for(out_rel: str) -> str:
     固定する。
 
     例:
-      ".faqkit/dashboard.html"    → "../"
+      ".knowledgekit/dashboard.html"    → "../"
       "dashboard.html"            → "./"
       "build/reports/dash.html"   → "../../"
     """
@@ -997,7 +997,7 @@ def _base_href_for(out_rel: str) -> str:
     return "../" * len(parent_parts) if parent_parts else "./"
 
 
-def render_dashboard(root: Path, out_rel: str = ".faqkit/dashboard.html") -> tuple[str, str]:
+def render_dashboard(root: Path, out_rel: str = ".knowledgekit/dashboard.html") -> tuple[str, str]:
     """dashboard.html 全文と、生成時刻を除いた署名 (16 桁 hex) を返す。
 
     `out_rel` は dashboard HTML の出力位置 (project root 相対)。
@@ -1011,14 +1011,14 @@ def render_dashboard(root: Path, out_rel: str = ".faqkit/dashboard.html") -> tup
     html = tpl.replace("__FAQKIT_DATA__", payload)
     html = html.replace("__FAQKIT_BASE_HREF__", _base_href_for(out_rel))
     # 署名を HTML の先頭コメントに書き込んで、次回の差分判定に使う。
-    html = f"<!-- faqkit-sig: {sig} -->\n" + html
+    html = f"<!-- knowledgekit-sig: {sig} -->\n" + html
     return html, sig
 
 
 def cmd_dashboard(root: Path, args: argparse.Namespace) -> int:
     config, _ = effective_config(root)
     dash_cfg = config.get("dashboard", {}) or {}
-    out_rel = args.output or dash_cfg.get("output", ".faqkit/dashboard.html")
+    out_rel = args.output or dash_cfg.get("output", ".knowledgekit/dashboard.html")
     out_path = (root / out_rel).resolve()
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -1029,7 +1029,7 @@ def cmd_dashboard(root: Path, args: argparse.Namespace) -> int:
     changed = True
     if out_path.exists():
         prev_head = out_path.read_text(encoding="utf-8", errors="replace").splitlines()[:1]
-        if prev_head and f"faqkit-sig: {sig}" in prev_head[0]:
+        if prev_head and f"knowledgekit-sig: {sig}" in prev_head[0]:
             changed = False
     if changed:
         out_path.write_text(html, encoding="utf-8")
@@ -1143,7 +1143,7 @@ def cmd_scan(root: Path, args: argparse.Namespace) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="faqkit", description="faq-kit 状態管理ツール")
+    p = argparse.ArgumentParser(prog="knowledgekit", description="knowledge-kit 状態管理ツール")
     p.add_argument("--root", type=Path, default=None, help="kit のルートパス (既定: 自動探索)")
     sub = p.add_subparsers(dest="cmd", required=True)
 

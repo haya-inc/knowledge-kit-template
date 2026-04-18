@@ -1,15 +1,15 @@
 # ----------------------------------------------------------------------------
-# faq-kit プロジェクト設定 (.faqkit/config.yml)
+# knowledge-kit プロジェクト設定 (.knowledgekit/config.yml)
 #
-# このファイルは「エージェントや tools/faqkit.py の既定挙動を調整したいとき」
+# このファイルは「エージェントや tools/knowledgekit.py の既定挙動を調整したいとき」
 # だけ触るものです。未指定の項目は組み込みデフォルトが使われます。
 #
 # 構造:
-#   - ignore は tools/faqkit.py が scan/prune で直接参照します
+#   - ignore は tools/knowledgekit.py が scan/prune で直接参照します
 #   - それ以外のセクションは CLAUDE.md §7-§8 に沿ってエージェントが
 #     参照するヒントです（強制ではなく、プロジェクトごとの既定値）
 #
-# 検証: `python tools/faqkit.py config` で実効設定を確認できます
+# 検証: `python tools/knowledgekit.py config` で実効設定を確認できます
 # ----------------------------------------------------------------------------
 
 version: 1
@@ -29,7 +29,7 @@ ignore:
 # ----------------------------------------------------------------------------
 # retry: 失敗エントリ (status: failed) のリトライ方針
 #
-# tools/faqkit.py は自動リトライしません。エージェントが取り込み
+# tools/knowledgekit.py は自動リトライしません。エージェントが取り込み
 # ワークフロー (CLAUDE.md §7) の中で failed_retained を再試行する
 # ときの既定挙動をここで指示します。
 # ----------------------------------------------------------------------------
@@ -68,7 +68,7 @@ web:
   method_order: [fetch, browser_mcp]
   fetch:
     timeout_seconds: 30
-    user_agent: "faq-kit/0.1"
+    user_agent: "knowledge-kit/0.1"
     follow_redirects: true
   browser_mcp:
     timeout_seconds: 60
@@ -94,10 +94,10 @@ language:
   translate: false
 
 # ----------------------------------------------------------------------------
-# logs: .faqkit/logs/ 配下のログ管理
+# logs: .knowledgekit/logs/ 配下のログ管理
 # ----------------------------------------------------------------------------
 logs:
-  dir: .faqkit/logs
+  dir: .knowledgekit/logs
   # 指定日数より古いログを prune 時に削除。0 で無期限保持。
   retention_days: 30
 
@@ -114,8 +114,8 @@ readme:
 # ----------------------------------------------------------------------------
 # dashboard: 1 枚 HTML ダッシュボードの生成挙動
 #
-# `python tools/faqkit.py dashboard` で state.yml と config を元に
-# .faqkit/dashboard.html を生成します。外部サーバー不要、file:// で開く
+# `python tools/knowledgekit.py dashboard` で state.yml と config を元に
+# .knowledgekit/dashboard.html を生成します。外部サーバー不要、file:// で開く
 # だけで高速起動する静的ページです。
 # ----------------------------------------------------------------------------
 dashboard:
@@ -124,5 +124,5 @@ dashboard:
   # 生成後にブラウザを自動で開くか。sync のたびにタブが増えるのを
   # 避けるため、既定は false。`dashboard --open` で都度開く想定。
   auto_open: false
-  # 出力先 (root 相対)。.faqkit/ 配下なら gitignore で扱いやすい。
-  output: .faqkit/dashboard.html
+  # 出力先 (root 相対)。.knowledgekit/ 配下なら gitignore で扱いやすい。
+  output: .knowledgekit/dashboard.html

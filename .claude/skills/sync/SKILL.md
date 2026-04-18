@@ -1,19 +1,19 @@
 ---
 name: sync
-description: inbox/ に置かれた原資料を source/ の Markdown に変換し、.faqkit/state.yml を最新化するフルフロー同期。scan → 変換 → record → prune → verify → update-readme → dashboard の順で実行する。ユーザーが「同期して」「取り込んで」「scan して」「更新して」と依頼した、あるいは inbox/ にファイルの追加・更新・削除があったときに使う。URL を chat で受け取って取り込む場合は先に url-ingest スキルに入り、その手順の後半で本スキルに合流する。
+description: inbox/ に置かれた原資料を source/ の Markdown に変換し、.knowledgekit/state.yml を最新化するフルフロー同期。scan → 変換 → record → prune → verify → update-readme → dashboard の順で実行する。ユーザーが「同期して」「取り込んで」「scan して」「更新して」と依頼した、あるいは inbox/ にファイルの追加・更新・削除があったときに使う。URL を chat で受け取って取り込む場合は先に url-ingest スキルに入り、その手順の後半で本スキルに合流する。
 ---
 
 # sync — inbox → source 同期
 
 `inbox/` を走査して `source/` に変換済み Markdown を揃え、`README.md`
-の一覧ブロックと `.faqkit/dashboard.html` を更新する一連の作業を、
+の一覧ブロックと `.knowledgekit/dashboard.html` を更新する一連の作業を、
 毎回同じ順序・同じ保証で実行するための手順書です。
 
 chat 経由で URL を渡されたときは先に url-ingest スキル
 (`.claude/skills/url-ingest/SKILL.md`) の手順に乗ってから、
 その中で本スキルの後半 (prune 以降) に合流します。
 
-手順は `tools/faqkit.py` の呼び出しと、エージェントによる変換作業で
+手順は `tools/knowledgekit.py` の呼び出しと、エージェントによる変換作業で
 構成されます。前者は決定的・冪等、後者は自由度があります。
 
 ## いつ走らせるか
@@ -29,8 +29,8 @@ chat 経由で URL を渡されたときは先に url-ingest スキル
 ## 前提
 
 - Python 3.10+ と PyYAML が導入されていること
-- `.faqkit/` を持つプロジェクト root を作業起点とすること
-  (`tools/faqkit.py` はそこから呼ぶ)
+- `.knowledgekit/` を持つプロジェクト root を作業起点とすること
+  (`tools/knowledgekit.py` はそこから呼ぶ)
 - `source/` への書き込みはこのスキル経由の変換結果 (Markdown / 画像)
   のみに限ること。既存 MD の直接編集は行わない。
 - `inbox/` は原則ユーザーの領域。このスキルで inbox 側を書き換えない
@@ -41,7 +41,7 @@ chat 経由で URL を渡されたときは先に url-ingest スキル
 ### 1. 差分を知る
 
 ```bash
-python tools/faqkit.py scan --json
+python tools/knowledgekit.py scan --json
 ```
 
 返ってくる JSON の 5 区分を頭に入れます。
@@ -78,7 +78,7 @@ browser MCP にフォールバックします。
 成功時:
 
 ```bash
-python tools/faqkit.py record \
+python tools/knowledgekit.py record \
   --source inbox/handbook/guide.pdf \
   --output source/handbook/guide.md \
   --converter "pandoc@3.1"
@@ -87,7 +87,7 @@ python tools/faqkit.py record \
 失敗時:
 
 ```bash
-python tools/faqkit.py record \
+python tools/knowledgekit.py record \
   --source inbox/broken.pdf \
   --converter "pdfminer@20231228" \
   --status failed \
@@ -101,7 +101,7 @@ python tools/faqkit.py record \
 ### 4. 孤立 MD を片付ける
 
 ```bash
-python tools/faqkit.py prune
+python tools/knowledgekit.py prune
 ```
 
 `orphan` に該当する state エントリと、それに紐づく `source/`
@@ -113,7 +113,7 @@ python tools/faqkit.py prune
 ### 5. 整合性を検証する
 
 ```bash
-python tools/faqkit.py verify
+python tools/knowledgekit.py verify
 ```
 
 warning が出たら内容を確認し、必要なら reindex や手動の record で
@@ -122,7 +122,7 @@ warning が出たら内容を確認し、必要なら reindex や手動の recor
 ### 6. README の一覧ブロックを更新する
 
 ```bash
-python tools/faqkit.py update-readme
+python tools/knowledgekit.py update-readme
 ```
 
 `README.md` 内の以下のマーカー間を、現時点の state.yml 由来の
@@ -144,10 +144,10 @@ python tools/faqkit.py update-readme
 ### 7. ダッシュボード HTML を更新する
 
 ```bash
-python tools/faqkit.py dashboard
+python tools/knowledgekit.py dashboard
 ```
 
-`.faqkit/dashboard.html` を生成します。状態・inbox 数・取り込み済み
+`.knowledgekit/dashboard.html` を生成します。状態・inbox 数・取り込み済み
 一覧・警告・使い方を 1 枚にまとめた静的 HTML で、サーバー不要で
 `file://` から即座に開けます。
 
