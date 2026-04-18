@@ -1,0 +1,23 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.obsidian/workspace*.json
+.obsidian/workspace
+.obsidian/cache
+.trash/
+
+# Office 一時ファイル
+~$*
+*.crdownload
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# faq-kit 自動生成物 (状態 / ダッシュボード / ログ)
+.faqkit/state.yml
+.faqkit/dashboard.html
+.faqkit/logs/
+.git.broken*

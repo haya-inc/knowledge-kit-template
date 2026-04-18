@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>faq-kit dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root {
+    --fg: #1a1a1a;
+    --fg-muted: #6b7280;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --ok: #059669;
+    --warn: #d97706;
+    --err: #dc2626;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fg: #e5e7eb;
+      --fg-muted: #9ca3af;
+      --bg: #0f172a;
+      --card: #1e293b;
+      --border: #334155;
+      --accent: #60a5fa;
+      --ok: #34d399;
+      --warn: #fbbf24;
+      --err: #f87171;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", "Segoe UI", sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 20px 80px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 16px; margin: 32px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 4px; }
+  h3 { font-size: 13px; margin: 16px 0 8px; color: var(--fg-muted); font-weight: 600; text-transform: none; letter-spacing: 0.02em; }
+  code, pre { font-family: var(--mono); font-size: 12.5px; }
+  code { background: var(--card); padding: 1px 6px; border-radius: 4px; border: 1px solid var(--border); }
+  pre { background: var(--card); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border); overflow-x: auto; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  header .root { color: var(--fg-muted); font-family: var(--mono); font-size: 12px; word-break: break-all; }
+  header .updated { color: var(--fg-muted); font-size: 12px; margin-top: 6px; }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 20px 0; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .card .label { color: var(--fg-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .card .value { font-size: 24px; font-weight: 600; margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .card .sub { color: var(--fg-muted); font-size: 11.5px; margin-top: 2px; }
+  .card.ok .value { color: var(--ok); }
+  .card.warn .value { color: var(--warn); }
+  .card.err .value { color: var(--err); }
+
+  .pill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+    vertical-align: middle;
+    margin-left: 8px;
+  }
+  .pill.ok { background: rgba(5,150,105,0.12); color: var(--ok); }
+  .pill.warn { background: rgba(217,119,6,0.12); color: var(--warn); }
+  .pill.err { background: rgba(220,38,38,0.12); color: var(--err); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--fg-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.04em; }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.src { font-family: var(--mono); font-size: 12px; color: var(--fg-muted); }
+  td.conv { font-family: var(--mono); font-size: 12px; color: var(--fg-muted); white-space: nowrap; }
+
+  .group { background: var(--card); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 14px; overflow: hidden; }
+  .group-head { padding: 10px 14px; background: rgba(0,0,0,0.02); border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; }
+  @media (prefers-color-scheme: dark) {
+    .group-head { background: rgba(255,255,255,0.04); }
+  }
+
+  .empty { color: var(--fg-muted); font-style: italic; padding: 12px; background: var(--card); border: 1px dashed var(--border); border-radius: 6px; }
+
+  details { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; margin-top: 12px; }
+  details[open] { padding-bottom: 14px; }
+  summary { cursor: pointer; font-weight: 600; font-size: 13px; }
+
+  .warn-row td { background: rgba(217,119,6,0.06); }
+  .err-row td { background: rgba(220,38,38,0.06); }
+
+  footer { color: var(--fg-muted); font-size: 11.5px; margin-top: 40px; text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>faq-kit dashboard <span id="status-pill"></span></h1>
+    <div class="root" id="root-path"></div>
+    <div class="updated" id="updated-at"></div>
+  </header>
+
+  <section class="cards" id="summary-cards"></section>
+
+  <section>
+    <h2>差分サマリ</h2>
+    <div id="scan-cards" class="cards"></div>
+  </section>
+
+  <section>
+    <h2>取り込み済み一覧</h2>
+    <div id="entries"></div>
+  </section>
+
+  <section>
+    <h2>警告 / 未解決</h2>
+    <div id="warnings"></div>
+  </section>
+
+  <section>
+    <h2>使い方</h2>
+    <p style="color:var(--fg-muted);font-size:13px;margin:0 0 8px;">
+      <code>kit/</code> 直下で実行します。詳しくは
+      <a href="./hooks/sync.md">hooks/sync.md</a> と
+      <a href="./CLAUDE.md">CLAUDE.md</a> を参照。
+    </p>
+    <pre># 差分確認 (人間向け / JSON)
+python tools/faqkit.py scan
+python tools/faqkit.py scan --json
+
+# 変換結果を記録 (sync hook の中で実行)
+python tools/faqkit.py record --source inbox/... --output source/... --converter "pandoc@3.1"
+
+# 孤立 MD の掃除 / 整合性検証
+python tools/faqkit.py prune
+python tools/faqkit.py verify
+
+# 索引とダッシュボードの更新
+python tools/faqkit.py update-readme
+python tools/faqkit.py dashboard --open</pre>
+  </section>
+
+  <details>
+    <summary>実効設定 (config)</summary>
+    <pre id="config-dump"></pre>
+  </details>
+
+  <footer>
+    生成: <span id="generated-at"></span> &middot;
+    <code>faq-kit</code> v<span id="tool-version"></span>
+  </footer>
+</div>
+
+<script id="faqkit-data" type="application/json">__FAQKIT_DATA__</script>
+<script>
+(() => {
+  const raw = document.getElementById("faqkit-data").textContent;
+  const D = JSON.parse(raw);
+
+  const $ = (id) => document.getElementById(id);
+
+  const fmtBytes = (n) => {
+    if (!n && n !== 0) return "-";
+    if (n < 1024) return n + " B";
+    const units = ["KB", "MB", "GB", "TB"];
+    let v = n / 1024, i = 0;
+    while (v >= 1024 && i < units.length - 1) { v /= 1024; i++; }
+    return v.toFixed(v >= 10 ? 0 : 1) + " " + units[i];
+  };
+  const fmtDate = (s) => s ? s.replace("T", " ").replace("Z", " UTC") : "-";
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+
+  // header
+  $("root-path").textContent = D.root || "";
+  $("updated-at").textContent = "state 最終更新: " + fmtDate(D.state.updated_at || "");
+  $("generated-at").textContent = fmtDate(D.generated_at);
+  $("tool-version").textContent = D.tool_version || "-";
+
+  // status pill
+  const hasIssue = D.scan.added + D.scan.modified + D.scan.output_missing + D.scan.orphan_source + D.scan.orphan_output + D.scan.failed_retained + D.scan.modified_output > 0;
+  const pill = $("status-pill");
+  if (D.state.entries_count === 0 && D.inbox.files_count === 0) {
+    pill.className = "pill warn"; pill.textContent = "空";
+  } else if (hasIssue) {
+    pill.className = "pill warn"; pill.textContent = "要 sync";
+  } else {
+    pill.className = "pill ok"; pill.textContent = "同期済";
+  }
+
+  // summary cards
+  const sumCards = [
+    { label: "取り込み済", value: D.stats.ok_count, sub: D.state.entries_count + " 件中" },
+    { label: "失敗", value: D.stats.failed_count, sub: "status: failed", kind: D.stats.failed_count > 0 ? "warn" : "" },
+    { label: "inbox 総数", value: D.inbox.files_count, sub: fmtBytes(D.inbox.total_bytes) },
+    { label: "source 合計", value: D.stats.source_files_count, sub: fmtBytes(D.stats.source_total_bytes) },
+  ];
+  $("summary-cards").innerHTML = sumCards.map(c =>
+    `<div class="card ${c.kind||''}"><div class="label">${esc(c.label)}</div>`
+    + `<div class="value">${esc(c.value)}</div>`
+    + `<div class="sub">${esc(c.sub)}</div></div>`
+  ).join("");
+
+  // scan cards
+  const scanCards = [
+    { label: "新規 added", value: D.scan.added, kind: D.scan.added > 0 ? "warn" : "" },
+    { label: "変更 modified", value: D.scan.modified, kind: D.scan.modified > 0 ? "warn" : "" },
+    { label: "MD 欠落", value: D.scan.output_missing, kind: D.scan.output_missing > 0 ? "warn" : "" },
+    { label: "MD 改変", value: D.scan.modified_output, kind: D.scan.modified_output > 0 ? "err" : "" },
+    { label: "孤立 source", value: D.scan.orphan_source, kind: D.scan.orphan_source > 0 ? "warn" : "" },
+    { label: "孤立 MD", value: D.scan.orphan_output, kind: D.scan.orphan_output > 0 ? "warn" : "" },
+    { label: "再試行対象", value: D.scan.failed_retained, kind: D.scan.failed_retained > 0 ? "warn" : "" },
+    { label: "スキップ", value: D.scan.skipped, kind: "" },
+  ];
+  $("scan-cards").innerHTML = scanCards.map(c =>
+    `<div class="card ${c.kind||''}"><div class="label">${esc(c.label)}</div>`
+    + `<div class="value">${esc(c.value)}</div></div>`
+  ).join("");
+
+  // entries grouped
+  const groups = D.groups || {};
+  const groupKeys = Object.keys(groups).sort();
+  const ent = $("entries");
+  if (groupKeys.length === 0) {
+    ent.innerHTML = `<div class="empty">まだ原資料は取り込まれていません。<code>inbox/</code> にファイルを置いて同期フックを走らせてください。</div>`;
+  } else {
+    ent.innerHTML = groupKeys.map(k => {
+      const rows = (groups[k] || []).map(e => {
+        const title = esc(e.title || e.source.split("/").pop());
+        const date = (e.converted_at || "").split("T")[0] || "-";
+        return `<tr>
+          <td><a href="${esc(e.output)}">${title}</a></td>
+          <td class="src"><a href="${esc(e.source)}">${esc(e.source)}</a></td>
+          <td class="num">${fmtBytes(e.source_size)}</td>
+          <td class="conv">${esc(e.converter || "unknown")}</td>
+          <td class="conv">${esc(date)}</td>
+        </tr>`;
+      }).join("");
+      return `<div class="group"><div class="group-head">${esc(k)}/</div>
+        <table>
+          <thead><tr><th>title</th><th>source</th><th>size</th><th>converter</th><th>converted</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table></div>`;
+    }).join("");
+  }
+
+  // warnings
+  const w = $("warnings");
+  const warnParts = [];
+  if (D.warnings.failed && D.warnings.failed.length) {
+    warnParts.push(`<h3>変換失敗 (${D.warnings.failed.length})</h3>`
+      + `<table><thead><tr><th>source</th><th>notes</th></tr></thead><tbody>`
+      + D.warnings.failed.map(e => `<tr class="err-row"><td class="src">${esc(e.source)}</td><td>${esc(e.notes||"")}</td></tr>`).join("")
+      + `</tbody></table>`);
+  }
+  if (D.warnings.output_missing && D.warnings.output_missing.length) {
+    warnParts.push(`<h3>MD 欠落 (${D.warnings.output_missing.length})</h3>`
+      + `<ul>` + D.warnings.output_missing.map(p => `<li class="src"><code>${esc(p)}</code></li>`).join("") + `</ul>`);
+  }
+  if (D.warnings.orphan_source && D.warnings.orphan_source.length) {
+    warnParts.push(`<h3>孤立ソース (${D.warnings.orphan_source.length})</h3>`
+      + `<ul>` + D.warnings.orphan_source.map(p => `<li class="src"><code>${esc(p)}</code></li>`).join("") + `</ul>`);
+  }
+  if (D.warnings.orphan_output && D.warnings.orphan_output.length) {
+    warnParts.push(`<h3>孤立 MD (${D.warnings.orphan_output.length}) — prune で削除されます</h3>`
+      + `<ul>` + D.warnings.orphan_output.map(p => `<li class="src"><code>${esc(p)}</code></li>`).join("") + `</ul>`);
+  }
+  if (D.warnings.modified_output && D.warnings.modified_output.length) {
+    warnParts.push(`<h3>MD 改変 (${D.warnings.modified_output.length}) — source は同期経由でのみ更新</h3>`
+      + `<ul>` + D.warnings.modified_output.map(p => `<li class="src"><code>${esc(p)}</code></li>`).join("") + `</ul>`);
+  }
+  if (D.warnings.config && D.warnings.config.length) {
+    warnParts.push(`<h3>config 警告 (${D.warnings.config.length})</h3>`
+      + `<ul>` + D.warnings.config.map(s => `<li>${esc(s)}</li>`).join("") + `</ul>`);
+  }
+  w.innerHTML = warnParts.length ? warnParts.join("") : `<div class="empty">警告はありません。</div>`;
+
+  // config
+  $("config-dump").textContent = JSON.stringify(D.config, null, 2);
+})();
+</script>
+</body>
+</html>
